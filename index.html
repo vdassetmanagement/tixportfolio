@@ -255,9 +255,11 @@ function seed(){
     { id:'p1', ...ev, order:'33816876',
       tickets: spread([...seats(209,12,304,308), ...seats(210,12,309,311)], 439.84) },
     { id:'p2', ...ev, order:'33816846', tickets: spread(seats(213,13,422,425), 219.92) },
-    { id:'p3', ...ev, order:'33816858', tickets: spread(seats(209,12,300,303), 219.92) }
+       { id:'p3', ...zd, order:'33816858', tickets: spread(seats(209,12,300,303), 219.92) },
+    { id:'p4', event:'MENESIX | ADE | B2B | ALL NIGHT LONG', venue:'IJland, Amsterdam',
+      date:'2026-10-24', source:'Paylogic', order:'171338846',
+      tickets: spread(['Second Release 1','Second Release 2','Second Release 3','Second Release 4'], 137.96) }
   ], sales:[] };
-}
 
 let data = seed(), calMonth = null;
 const openOrders = new Set(); // welke bestellingen uitgeklapt staan
