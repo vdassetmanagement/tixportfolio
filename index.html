@@ -223,29 +223,6 @@
   </div>
 </form></dialog>
 
-<dialog id="dlgPaste"><div class="dlg-body">
-  <h3>Bestelling plakken</h3>
-  <p class="hint" style="margin:0 0 10px">Plak de tekst van je bevestigingsmail. Ik haal er het ordernummer, het event, de datum, het bedrag en de stoelen uit; je kunt alles daarna nog nakijken.</p>
-  <textarea id="pasteBox" style="min-height:180px" placeholder="Bevestiging Ticketmaster voor ordernummer 33816876 - ..."></textarea>
-  <div class="dlg-actions">
-    <button type="button" class="ghost" data-close>Annuleren</button>
-    <button type="button" class="primary" id="pasteGo">Uitlezen</button>
-  </div>
-</div></dialog>
-
-<script>
-const KEY = 'ticket-portfolio-v3';
-const uid = () => 'x'+Math.random().toString(36).slice(2,9);
-const eur = n => new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n||0);
-const dfmt = s => { const d = new Date(s+'T00:00:00');
-  return isNaN(d) ? s : d.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'}); };
-
-function spread(labels, total){
-  const n = labels.length, base = Math.floor(total/n*100)/100;
-  let rest = Math.round((total - base*n)*100);
-  return labels.map(l => { const extra = rest > 0 ? .01 : 0; if(rest>0) rest--;
-    return { id: uid(), label: l, cost: +(base+extra).toFixed(2) }; });
-}
 function seed(){
   const ev = { event:'New Wave — All Stars', venue:'Ziggo Dome, Amsterdam',
     date:'2027-04-25', source:'Ticketmaster' };
@@ -255,39 +232,12 @@ function seed(){
     { id:'p1', ...ev, order:'33816876',
       tickets: spread([...seats(209,12,304,308), ...seats(210,12,309,311)], 439.84) },
     { id:'p2', ...ev, order:'33816846', tickets: spread(seats(213,13,422,425), 219.92) },
-       { id:'p3', ...zd, order:'33816858', tickets: spread(seats(209,12,300,303), 219.92) },
+    { id:'p3', ...ev, order:'33816858', tickets: spread(seats(209,12,300,303), 219.92) },
     { id:'p4', event:'MENESIX | ADE | B2B | ALL NIGHT LONG', venue:'IJland, Amsterdam',
       date:'2026-10-24', source:'Paylogic', order:'171338846',
       tickets: spread(['Second Release 1','Second Release 2','Second Release 3','Second Release 4'], 137.96) }
   ], sales:[] };
-
-let data = seed(), calMonth = null;
-const openOrders = new Set(); // welke bestellingen uitgeklapt staan
-
-function seatSummary(p){ // korte samenvatting: "vak 209 rij 12 · stoel 304-308"
-  const groepen = new Map();
-  p.tickets.forEach(t=>{
-    const m = /^(.*?)(?:· )?stoel (\d+)$/.exec(t.label);
-    const kop = m ? m[1].replace(/·\s*$/,'').trim() : t.label;
-    const nr = m ? +m[2] : null;
-    if(!groepen.has(kop)) groepen.set(kop, []);
-    groepen.get(kop).push(nr);
-  });
-  return [...groepen.entries()].map(([kop, nrs])=>{
-    if(nrs.some(n=>n===null)) return kop;
-    nrs.sort((a,b)=>a-b);
-    const delen = []; let start = nrs[0], vorige = nrs[0];
-    nrs.slice(1).forEach(n=>{ if(n===vorige+1){ vorige = n; return; }
-      delen.push(start===vorige?`${start}`:`${start}–${vorige}`); start = vorige = n; });
-    delen.push(start===vorige?`${start}`:`${start}–${vorige}`);
-    return `${kop} · stoel ${delen.join(', ')}`;
-  }).join(' | ');
 }
-
-const store = {
-  get: async k => { const v = localStorage.getItem(k); return v === null ? null : {key:k, value:v}; },
-  set: async (k,v) => { localStorage.setItem(k, v); return {key:k, value:v}; }
-};
 
 function normalize(d){ // oudere opslag: verkopen hadden ticketIds bij één order
   (d.sales||[]).forEach(s=>{
